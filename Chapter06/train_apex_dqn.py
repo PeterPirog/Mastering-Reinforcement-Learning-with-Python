@@ -89,8 +89,8 @@ def main(config, max_samples):
 if __name__ == '__main__':
     max_samples = 500000
     config = {"env": "CartPole-v0",
-              "num_workers": 50,
-              "eval_num_workers": 10,
+              "num_workers": 4,
+              "eval_num_workers": 2,
               "n_step": 3,
               "max_eps": 0.5,
               "train_batch_size": 512,

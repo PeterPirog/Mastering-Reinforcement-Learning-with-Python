@@ -12,9 +12,15 @@ def remote_function():
     return 1
 
 object_ids = []
+object_values = []
 for _ in range(4):
     y_id = remote_function.remote()
     object_ids.append(y_id)
+    object_values.append(ray.get(y_id))
+
+print(f'object_ids={object_ids}')
+print(f'object_values={object_values}')
+
 
 @ray.remote
 def remote_chain_function(value):
