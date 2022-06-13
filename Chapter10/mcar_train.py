@@ -21,7 +21,7 @@ ALL_STRATEGIES = [
     "curriculum_n_dueling",
     "action_masking",
 ]
-STRATEGY = "demonstration"
+STRATEGY = "action_masking"
 CURRICULUM_MAX_LESSON = 4
 CURRICULUM_TRANS = 150
 MAX_STEPS = 2e6
@@ -38,7 +38,7 @@ def get_apex_trainer(strategy):
     config["target_network_update_freq"] = 50000
     config["rollout_fragment_length"] = 200
     config["timesteps_per_iteration"] = 10000
-    config["num_gpus"] = 1
+    config["num_gpus"] = 0  # 1
     config["num_workers"] = 20
     config["evaluation_num_workers"] = 10
     config["evaluation_interval"] = 1
@@ -62,7 +62,7 @@ def get_apex_trainer(strategy):
         config["env_config"] = {"lesson": 0}
     elif strategy == "demonstration":
         config["input"] = DEMO_DATA_DIR
-        #config["input"] = {"sampler": 0.7, DEMO_DATA_DIR: 0.3}
+        # config["input"] = {"sampler": 0.7, DEMO_DATA_DIR: 0.3}
         config["explore"] = False
         config["input_evaluation"] = []
         config["n_step"] = 1
@@ -151,4 +151,3 @@ for i in range(NUM_TRIALS):
         writer = csv.writer(f)
         writer.writerow(result)
 print(f"Average episode length: {np.mean(avg_eps_lens)}")
-
