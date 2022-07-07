@@ -4,18 +4,23 @@ from ray import tune
 from ray.tune.schedulers import PopulationBasedTraining, ASHAScheduler
 # https://docs.ray.io/en/latest/tune/api_docs/suggestion.html#optuna-tune-suggest-optuna-optunasearch
 from ray.tune.suggest.optuna import OptunaSearch
+from ray.tune.suggest.hyperopt import HyperOptSearch
+from ray.tune.suggest.bayesopt import BayesOptSearch
+import random
 
 asha_scheduler = ASHAScheduler(
-    time_attr='time_total_s', # training_iteration
+    time_attr='time_total_s',  # training_iteration
     # metric='episode_reward_mean', # episode_reward_mean # maximum episode len episode_reward_min reward  episode_reward_mean episode_len_mean
     # mode='max',
-    max_t=900,  # 100
+    max_t=2000,  # 100
     grace_period=10,
     reduction_factor=3,
     brackets=1)
 
 # https://medium.com/optuna/scaling-up-optuna-with-ray-tune-88f6ca87b8c7
 algo = OptunaSearch()
+# algo = HyperOptSearch()
+# algo = BayesOptSearch()
 
 ray.init()
 analysis = tune.run(
@@ -42,7 +47,7 @@ analysis = tune.run(
         "horizon": None,
         "lr": tune.qloguniform(1e-4, 1e-1, 5e-5),  # tune.choice([0.01, 0.001, 0.0001, 0.00001]),
         "gamma": tune.quniform(0.9, 0.999, 0.001),
-        #"sgd_stepsize": tune.quniform(5e-6, 0.003, 5e-6),
+        # "sgd_stepsize": tune.quniform(5e-6, 0.003, 5e-6),
 
         "train_batch_size": tune.choice([5000, 10000, 20000, 40000]),
 
@@ -50,8 +55,15 @@ analysis = tune.run(
 
         "model": {
             "vf_share_layers": tune.choice([True, False]),
-            "fcnet_hiddens": tune.choice([[32, 32], [64, 64], [128, 128]]),
-            #"fcnet_hiddens": tune.sample_from(lambda: [tune.choice(range(8,257)).sample()]*tune.choice(range(1,4)).sample()),
+            "fcnet_hiddens": tune.choice([[16, 16, 16],
+                                          [32, 32, 32],
+                                          [64, 64, 64],
+                                          [128, 128, 128]]),
+            # "num_layers": tune.randint(1, 4),
+            # "num_units": tune.randint(8, 257),
+            # "fcnet_hiddens": tune.sample_from(lambda _: [random.randint(8,257)]*random.randint(1,4)),
+            # "fcnet_hiddens": tune.sample_from(lambda _: [16,32,64,128]),
+            # "fcnet_hiddens": tune.sample_from(lambda: [tune.choice(range(8,257)).sample()]*tune.choice(range(1,4)).sample()),
             "fcnet_activation": "tanh",
         },
         # PPO hyperparameters https://medium.com/aureliantactics/ppo-hyperparameters-and-ranges-6fc2d29bccbe
@@ -66,7 +78,7 @@ analysis = tune.run(
         "entropy_coeff": tune.quniform(0, 0.05, 0.005),
         "clip_param": tune.quniform(0.1, 0.3, 0.05),
         "vf_clip_param": tune.randint(1, 11),
-        "grad_clip":None,
+        "grad_clip": None,
         "kl_target": tune.quniform(0.003, 0.03, 0.001),
 
     },
