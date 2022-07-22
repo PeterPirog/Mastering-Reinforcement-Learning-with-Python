@@ -3,13 +3,30 @@ import ray
 from ray import tune
 import ray.rllib.agents.ppo as ppo
 from ray.tune.logger import pretty_print
+from pprint import pprint
 
 ray.init()
 config = ppo.DEFAULT_CONFIG.copy()
 config["num_gpus"] = 0
 config["num_workers"] = 63
 config["env"] = "CartPole-v0"
-config["lr"] = tune.grid_search([0.01, 0.001, 0.0001])
+config["framework"] = "tf2"
+config["model"]["vf_share_layers"] = True
+# config["lr"] = tune.grid_search([0.01, 0.001, 0.0001])
+
+#LSTM
+#config["model"]["use_lstm"] = True
+#config["model"]["max_seq_len"] = 3
+#config["model"]["lstm_cell_size"] =256
+#config["model"]["lstm_use_prev_action"] =False
+#config["model"]["lstm_use_prev_reward"] = False
+
+# ATTENTION
+#config["model"]["use_attention"] = True
+
+
+
+pprint(config)
 
 stop_criteria = {"episode_reward_mean": 200}
 log_dir = "/home/ppirog/projects/Mastering-Reinforcement-Learning-with-Python/custom_scripts/cartpole"
